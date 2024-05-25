@@ -5,6 +5,8 @@ import ddddocr
 import feapder
 import argparse
 
+import requests
+
 from env import *
 from feapder.utils.log import log
 
@@ -71,21 +73,59 @@ class CQ(feapder.AirSpider):
             "APPID": "5405362541914944",
             "APPNAME": "swmzncqapp"
         }
+        data = {
+            'data': '{"APPID":"6390414391613368","APPNAME":"swmqdzsapp"}',
+        }
         yield feapder.Request(
-            url,
-            callback=self.parse_done,
+            'https://xsfw.gzist.edu.cn/xsfw/sys/swpubapp/MobileCommon/getSelRoleConfig.do',
             cookies=cookies,
-            json=json)
+            data=data,
+            callback=self.parse_test
+        )
 
     def parse_done(self, request, response):
         url = "https://xsfw.gzist.edu.cn/xsfw/sys/swmzncqapp/modules/studentCheckController/uniFormSignUp.do"
         cookies = response.cookies
         yield feapder.Request(
             url,
-            callback=self.parse,
+            callback=self.parse_test,
             cookies=cookies)
 
+    def parse_test(self, request, response):
+        url = "https://xsfw.gzist.edu.cn/xsfw/sys/swmqdzsapp/MobileJrqdController/doSignIn.do"
+        cookies = {
+            '_WEU': response.cookies.get("_WEU"),
+            # 'EMAP_LANG': 'zh',
+            # 'JSESSIONID': '53BB5A5A13339DF9BE5B379A3E19E832',
+            # 'route': 'd585c946f1c4109913dcb97b2119f1ea',
+        }
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:126.0) Gecko/20100101 Firefox/126.0',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
+            # 'Accept-Encoding': 'gzip, deflate, br, zstd',
+            'Connection': 'keep-alive',
+            # 'Cookie': '_WEU=Acdym3nKrqOZMR3K*UYn8uMFLGRIfxa4dV1koANVsr_KIxv*0QwRips1M9rBthyDBwa3SHPEcRThDfD0DvE5W3D4RzfZM_qVmZQBQSCpg72oFSrnjYCifsJYl6aK6grFLm6Qnh1dXxnzVRiyOguROctmZ5eu_EDz8Wh6nNnwk4u8_DaGiZBqekqu5FjosD69zfPCy*moUMpRC5syuudVoyNSVxIYjlgcpC2v8JOsF6K8iyNn2s6Kt3xE9LRtGu3dPhA3WtcIDF*9a_z5nowvEQ_ODwzexNKwpeHdkQcKQJqMnUcZLS9qrw1xcjG*_NlmjqdxwA7QjnVkSsTK5MJlm6Au81gGHoDp0xmJUTyYrV1d6FVDd0vu_fAwMtfY_n2TKkuP74GHic2.; EMAP_LANG=zh; JSESSIONID=53BB5A5A13339DF9BE5B379A3E19E832; route=d585c946f1c4109913dcb97b2119f1ea',
+            'Upgrade-Insecure-Requests': '1',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Priority': 'u=1',
+        }
+
+        data = {
+            'data': '{"SFFWN":"0","DDMC":"Pyeongyang-si, North Korea","QDJD":139.650027,"QDWD":35.6764225,"RWBH":"188D6E936CB43368E0630717000A737C","QDPL":"2"}',
+        }
+        print(cookies)
+        yield feapder.Request(
+            url,
+            callback=self.parse,
+            headers=headers,
+            params=data,
+            cookies=cookies)
     def parse(self, request, response):
+        print(response.text)
         try:
             result = response.json["msg"]
             if result == ' 当前时段不在考勤时段内':
